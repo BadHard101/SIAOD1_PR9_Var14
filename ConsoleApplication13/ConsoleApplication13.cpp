@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <algorithm>
+#include <ctime>
 using namespace std;
 
 string filee = "binfile.bin";
@@ -22,15 +23,15 @@ bool cmp(table& a, table& b) {
     return false;
 }
 
-city* fnd_cty_by_id(int find_id) {
+string fnd_cty_by_id(int find_id) {
 	city* c = new city;
 	ifstream binFile2(filee, ios::binary);
 	while (binFile2.read((char*)c, sizeof(city)))
 		if (c->id == find_id) {
 			binFile2.close();
-			return c;
+			return c->name;
 		}
-	return nullptr;
+	return "-1";
 }
 
 int min(int x, int y) { return (x <= y) ? x : y; }
@@ -91,22 +92,9 @@ int fibMonaccianSearch(vector<table> arr, int x, int n)
     return -1;
 }
 
-void Create_file() {
-
-}
-
-int main()
-{
-
-	int a = 99;
-	int b = 998;
-	srand(time(NULL));
-    int N = 100;
-
-    vector<table> vec;
- 
-	/*ofstream binFile(filee, ios::binary);
-	cout << binFile.is_open() << endl;
+void create_file(int N,int a,int b,vector<table>& vec) {
+    ofstream binFile(filee, ios::binary);
+    cout << binFile.is_open() << endl;
     for (int i = 0; i < N; i++)
     {
         bool flag = true;
@@ -118,56 +106,119 @@ int main()
                 for (int i = 0; i < vec.size(); i++)
                 {
                     if (vec[i].id == x) {
-                        f = 1;
+                        x++;
                         break;
+                      
                     }
-                    flag = false;
+
                 }
-                if (f == 0)
-                    break;
-                x++;
+                flag = false;
             }
         }
-		city c;
-        table cc = {x, i};
-		c.id = x;
-		c.name = "Moscow"+to_string(i);
+        city c;
+        table cc = { x, i };
+        c.id = x;
+        c.name = "Moscow" + to_string(i);
         vec.push_back(cc);
-		binFile.write((char*)&c, sizeof(city));
-	}
-	binFile.close();*/
-
-	city* c = new city;
-	ifstream binFile2(filee, ios::binary);
-    int index = 0;
+        binFile.write((char*)&c, sizeof(city));
+    }
+    binFile.close();
+}
+void read_file(vector<table>&vec) {
+    city* c = new city;
+    ifstream binFile2(filee, ios::binary);
+    //int index = 0;
     while (binFile2.read((char*)c, sizeof(city))) {
         cout << c->id << " " << c->name << endl;
-        table cc = { c->id, index };
-        vec.push_back(cc);
-        index += 1;
+        //table cc = { c->id, index };
+        //vec.push_back(cc);
+        //index += 1;
     }
-	binFile2.close();
+    binFile2.close();
+}
 
-    sort(vec.begin(),vec.end(), cmp);
-    for (int i = 0; i < vec.size(); i++)
+void seek(vector<table>vec, int N, int x) {
+    sort(vec.begin(), vec.end(), cmp);
+
+    /*for (int i = 0; i < vec.size(); i++)
     {
         cout << vec[i].id << " " << vec[i].address << endl;
-    }
-    
-    int x = 736;
+    }*/
+
     int adres = fibMonaccianSearch(vec, x, N);
-    if (adres >= 0)
-        printf("Found at adres: %d", adres);
+
+    /*if (adres >= 0)
+        printf("Found at address: %d", adres);
     else
         printf("%d isn't present in the array", x);
-
     cout << endl;
-    city* link = new city;
+    */
+
+    city* c = new city;
     ifstream binFile3(filee, ios::binary);
     binFile3.seekg(adres * sizeof(city), SEEK_SET);
     binFile3.read((char*)c, sizeof(city));
-    cout << c->id << " " << c->name << endl;
-    /*
-    if (fnd_cty_by_id(x))
-        cout << fnd_cty_by_id(x) << endl;*/
+    cout << c->name << endl;
+}
+int main()
+{
+	int a = 10000;
+	int b = 99999;
+	srand(time(NULL)); 
+    int N = 100;
+    cout << "Enter number of records: ";
+    cin >> N;
+    int x;
+    vector<table> vec;
+    int menu = 5;
+    string c;
+    unsigned int start_time;
+    unsigned int end_time;
+
+    while (menu != 0) {
+        cout << "1 - Create file\n"
+            << "2 - Read file\n"
+            << "3 - Fibonachi search\n"
+            << "4 - Linear search\n"
+            << "0 - Exit\n"
+            << "Enter: ";
+        cin >> menu;
+        switch (menu) {
+        case 1:
+            create_file(N, a, b, vec);
+            break;
+        case 2:
+            cout << "\nList of cities:\n";
+            read_file(vec);
+            cout << endl;
+            break;
+        case 3:
+            cout << endl << "Enter a num: ";
+            cin >> x;
+            start_time = clock();
+            seek(vec,N,x);
+            end_time = clock();
+            cout << endl;
+            cout << "time: "
+                << (end_time - start_time) / 1000.0
+                << " sec\n\n"; 
+            break;
+        case 4:
+            cout << endl << "Enter a num: ";
+            cin >> x;
+            start_time = clock();
+            c = fnd_cty_by_id(x);
+            end_time = clock();
+            if (c != "-1")
+                cout << c << endl << endl;
+            else
+                cout << endl;
+            cout << "time: "
+                << (end_time - start_time) / 1000.0
+                << " sec\n\n";
+            break;
+        default:
+            cout << "It's me, Mario!" << endl << endl;
+        }
+    };
 }
